@@ -1,6 +1,7 @@
 {
-    "name": "remill-template",
-    "image": "ghcr.io/llvmparty/remill-template/dependencies:22.04-llvm19.1.7-remill6.0.0",
+    "name": "lifting-training",
+    // NOTE: The image tag is likely to be updated on the day of the training.
+    "image": "ghcr.io/llvmparty/packages/dependencies:22.04-llvm19-20251123-7c004a9d",
     "customizations": {
         "vscode": {
             "extensions": [

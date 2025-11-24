@@ -65,28 +65,8 @@ int main(int argc, char **argv) {
   llvm::IRBuilder<> ir(block);
   ir.CreateRet(remill::LoadMemoryPointer(block, *intrinsics));
 
-  // Print called functions
-  llvm::outs() << "[unoptimized]\n";
-  auto printed = std::set<llvm::Function *>{};
-  for (auto &basic_block : *function) {
-    for (auto &instruction : basic_block) {
-      if (auto caller = llvm::dyn_cast<llvm::CallBase>(&instruction)) {
-        auto callee = caller->getCalledFunction();
-        if (!printed.count(callee)) {
-          auto name = callee->getName().str();
-          llvm::outs() << "; Mangled name: " << name << "\n";
-          callee->setName(llvm::demangle(name));
-          llvm::outs() << *callee << "\n";
-          printed.insert(callee);
-        }
-      }
-    }
-  }
-  function->print(llvm::outs());
-
+  // Optimize the lifted function and print it
   remill::OptimizeModule(arch.get(), semantics.get(), {function});
-
-  llvm::outs() << "\n[optimized]\n";
   function->print(llvm::outs());
 
   return EXIT_SUCCESS;

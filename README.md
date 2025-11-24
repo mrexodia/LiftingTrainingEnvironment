@@ -1,11 +1,6 @@
-# remill-template
+# LiftingTrainingEnvironment
 
-Simple template for using Remill. To understand remill, take a look at the following documentation pages:
-
-- [Step-by-step guide on how Remill lifts an instruction](https://github.com/lifting-bits/remill/blob/master/docs/LIFE_OF_AN_INSTRUCTION.md)
-- [The design and architecture of Remill](https://github.com/lifting-bits/remill/blob/master/docs/DESIGN.md)
-
-The [`example.cpp`](src/example.cpp) lifts `mov rcx, 1337` and prints the lifted basic block function.
+Empty training environment to prepare things locally. Just follow the instruction below :)
 
 ## Setting up the environment
 
@@ -15,7 +10,7 @@ This repository uses a [`devcontainer.json`](./.devcontainer/devcontainer.json) 
 
 **Using Codespaces is required for the training**
 
-1. [Fork this repository](https://github.com/mrexodia/RiscyWorkshop/fork)
+1. [Fork this repository](https://github.com/mrexodia/LiftingTrainingEnvironment/fork)
 2. Click the green `<> Code` button
 3. Press `...` and then `New with options...`
 4. Change `Machine type` to `4-core`
@@ -68,26 +63,74 @@ Additionally it's recommended to configure Docker to use the WSL 2 backend.
 
 </details>
 
-### 3) Local build
+## Building the tools
 
-First build the dependencies, this includes LLVM per default. To use your own LLVM, pass `-DUSE_EXTERNAL_LLVM=ON`:
+To build the project, press the `Build` button in the status bar:
 
-```bash
-cmake -G Ninja -B dependencies/build -S dependencies -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=RelWithDebInfo
-cmake --build dependencies/build
-```
+![](.devcontainer/build-button.png)
 
-_Note_: On Windows this requires a development command prompt and MSVC is _not_ supported.
+You will be prompted for a preset, select `clang` and the build will start:
 
-You should then have a `dependencies/install` folder.
+![](.devcontainer/select-preset.png)
 
-Then build the main project:
+Alternatively you can build with the following commands:
 
-```bash
-cmake -G Ninja -B build "-DCMAKE_PREFIX_PATH=dependencies/install" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+```sh
+cmake --preset clang
 cmake --build build
 ```
 
-For more information, see [`LLVMParty/packages/dependencies.md`](https://github.com/LLVMParty/packages/blob/main/dependencies.md).
+## Checking the environment
 
-If you do not want to build LLVM on Windows you can download [`llvm-19.1.6-install.7z`](https://github.com/LLVMParty/remill-template/releases/download/llvm-prebuild/llvm-19.1.6-install.7z). See [`build.yml`](.github/workflows/build.yml) for an example in GitHub Actions.
+To verify if the environment is set up correctly, run:
+
+```sh
+llvm-config --prefix
+```
+
+Expected output:
+
+> `/usr/local`
+
+The `${workspaceFolder}/build` directory will also be added to your `PATH`, so you can easily access your tools from anywhere. To verify, run the following command:
+
+```sh
+remill-example
+```
+
+Expected output:
+
+```sh
+; Function Attrs: inlinehint nounwind
+define ptr @lifted_example(ptr noalias %state, i64 %program_counter, ptr noalias %memory) #15 {
+  %RCX = getelementptr inbounds %struct.State, ptr %state, i32 0, i32 0, i32 6, i32 5, i32 0, i32 0, !remill_register !7
+  %BRANCH_TAKEN = alloca i8, align 1
+  %RETURN_PC = alloca i64, align 8
+  %MONITOR = alloca i64, align 8
+  store i64 0, ptr %MONITOR, align 8
+  %STATE = alloca ptr, align 8
+  store ptr %state, ptr %STATE, align 8
+  %MEMORY = alloca ptr, align 8
+  store ptr %memory, ptr %MEMORY, align 8
+  %NEXT_PC = alloca i64, align 8
+  store i64 %program_counter, ptr %NEXT_PC, align 8
+  %PC = getelementptr inbounds %struct.State, ptr %state, i32 0, i32 0, i32 6, i32 33, i32 0, i32 0, !remill_register !8
+  %CSBASE = alloca i64, align 8
+  store i64 0, ptr %CSBASE, align 8
+  %SSBASE = alloca i64, align 8
+  store i64 0, ptr %SSBASE, align 8
+  %ESBASE = alloca i64, align 8
+  store i64 0, ptr %ESBASE, align 8
+  %DSBASE = alloca i64, align 8
+  store i64 0, ptr %DSBASE, align 8
+  %1 = load i64, ptr %NEXT_PC, align 8
+  store i64 %1, ptr %PC, align 8
+  %2 = add i64 %1, 7
+  store i64 %2, ptr %NEXT_PC, align 8
+  %3 = load ptr, ptr %MEMORY, align 8
+  store i64 1337, ptr %RCX, align 8, !tbaa !9
+  store ptr %3, ptr %MEMORY, align 8
+  %4 = load ptr, ptr %MEMORY, align 8
+  ret ptr %4
+}
+```
