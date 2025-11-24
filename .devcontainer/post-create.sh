@@ -15,4 +15,4 @@ apt update && apt install --no-install-recommends -y \
 
 # Build the examples
 rm -rf build
-cmake --preset clang && cmake --build build
+cmake --preset clang
